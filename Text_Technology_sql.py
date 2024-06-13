@@ -4,9 +4,50 @@ import xml.etree.ElementTree as ET
 xml_files = "/Users/diana/Desktop/TT"
 output_sql_file = 'sentences.sql'
 
+subdomain_translations = {
+    "Gefaesschirurgie": "Vascular Surgery",
+    "DerInternist": "The Internist",
+    "DerUnfallchirurg": "The Trauma Surgeon",
+    "DerRadiologe": "The Radiologist",
+    "DerNervenarzt": "The Neurologist",
+    "HNO": "ENT (Ear, Nose, Throat)",
+    "IntensiveMedizin": "Intensive Medicine",
+    "DerHautarzt": "The Dermatologist",
+    "EthikInDerMedizin": "Ethics in Medicine",
+    "ZfuerHerzThoraxGefaesschirurgie": "Journal for Heart, Thorax and Vascular Surgery",
+    "DerOpthalmologe": "The Ophthalmologist",
+    "DerChirurg": "The Surgeon",
+    "OperativeOrthopaedie": "Operative Orthopedics",
+    "DerOrthopaede": "The Orthopedist",
+    "Psychotherapeut": "Psychotherapist",
+    "Herz": "Heart",
+    "PerinatalMedizin": "Perinatal Medicine",
+    "ZfuerGerontologie+Geriatrie": "Journal for Gerontology and Geriatrics",
+    "ZfuerKardiologie": "Journal for Cardiology",
+    "Reproduktionsmedizin": "Reproductive Medicine",
+    "MedizinischeKlinik": "Medical Clinic",
+    "KlinischeNeuroradiologie": "Clinical Neuroradiology",
+    "DerAnaesthesist": "The Anesthetist",
+    "DerGynaekologe": "The Gynecologist",
+    "MundKieferGesichtschirurgie": "Oral and Maxillofacial Surgery",
+    "ZfuerRheumatologie": "Journal for Rheumatology",
+    "ForumDerPsychoanalyse": "Forum for Psychoanalysis",
+    "Arthroskopie": "Arthroscopy",
+    "Bundesgesundheitsblatt": "Federal Health Bulletin",
+    "Strahlentherapie+Onkologie": "Radiotherapy and Oncology",
+    "Rechtsmedizin": "Forensic Medicine",
+    "ManuelleMedizin": "Manual Medicine",
+    "DerUrologeA": "The Urologist A",
+    "Trauma+Berufskrankheit": "Trauma and Occupational Disease",
+    "Herzschrittmachertherapie": "Pacemaker Therapy",
+    "MonatsschriftKinderheilkunde": "Monthly Journal of Pediatrics",
+    "DerSchmerz": "The Pain",
+    "Notfall+Rettungsmedizin": "Emergency and Rescue Medicine",
+    "DerPathologe": "The Pathologist",
+}
+
 with open(output_sql_file, 'w') as f:
     f.write('''CREATE TABLE IF NOT EXISTS Sentences (
-                    SentenceID SERIAL PRIMARY KEY,
                     ArticleID TEXT,
                     Subdomain TEXT,
                     SentenceText TEXT
@@ -14,29 +55,29 @@ with open(output_sql_file, 'w') as f:
 
     # XML filenames with dir
     xml_filenames = [os.path.join(xml_files, filename) for filename in os.listdir(xml_files)]
+    #print(xml_filenames)
+
+    processed_sentences = set()
 
     for xml_file in xml_filenames:
         if os.path.isfile(xml_file) and os.path.getsize(xml_file) > 0:  # Ensure it's a file and it's not empty
-            try:
-                print(f"Processing file: {xml_file}") 
-                tree = ET.parse(xml_file)  
-                root = tree.getroot()
+            tree = ET.parse(xml_file)
+            root = tree.getroot()
+            article_id = root.attrib.get('id')
+            subdomain = os.path.basename(xml_file).split('.')[0]
 
-                article_id = root.attrib.get('id') #unique article's identification
+            # Translate subdomain if possible
+            subdomain_translation = subdomain_translations.get(subdomain)
 
-                for sentence in root.findall('.//sentence'):
-                    umlsterm = sentence.find('.//umlsterm/concept')
-                    if umlsterm is not None: #sometimes subdomains are missing
-                        subdomain = umlsterm.attrib.get('preferred', '').replace("'", "''")  # Handle single quotes
-                        sentence_text = ''.join(sentence.itertext()).strip().replace("'", "''") if sentence.text is None else sentence.text.strip().replace("'", "''")
-                        f.write(f"INSERT INTO Sentences (ArticleID, Subdomain, SentenceText) VALUES ('{article_id}', '{subdomain}', '{sentence_text}');\n")
-            except ET.ParseError as e: # just checking if any XML syntax problems are there hindering parsing
-                print(f"ParseError in file {xml_file}: {e}") 
-            except Exception as e: #any other problems
-                print(f"An error occurred with file {xml_file}: {e}")
-        else:
-            print(f"Skipping file: {xml_file}, it's either not a file or empty.")
+            for sentence in root.findall('sentence'):
+                text_element = sentence.find('text')
+                if text_element is not None:
+                    sentence_text = ' '.join(token.text for token in text_element.findall('token') if token.text)
+                    sentence_text = sentence_text.replace("'", "''")  # Escape single quotes in the sentence text
+                    f.write(f"INSERT INTO Sentences (ArticleID, Subdomain, SentenceText) VALUES ("
+                            f"'{article_id}', '{subdomain_translation}', '{sentence_text}');\n")
+            
 
-print("Data extraction and SQL creation complete.")
+
 
 
