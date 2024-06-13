@@ -49,7 +49,7 @@ with open(output_sql_file, 'w') as f:
     f.write('''CREATE TABLE IF NOT EXISTS Sentences (
                     ArticleID TEXT,
                     Subdomain TEXT,
-                    SentenceText TEXT
+                    Keywords TEXT
                  );\n''')
 
     # XML filenames with dir
@@ -61,14 +61,22 @@ with open(output_sql_file, 'w') as f:
             root = tree.getroot()
             article_id = root.attrib.get('id')
             subdomain = os.path.basename(xml_file).split('.')[0]
-
+            
             # Translate subdomain if possible
-            subdomain_translation = subdomain_translations.get(subdomain)
+            subdomain_translation = subdomain_translations.get(subdomain, subdomain)
+            
+            # Extract keywords
+            concepts = [concept.attrib['preferred'] for concept in root.findall('.//concept') if 'preferred' in concept.attrib]
+            #print (concepts)
+            keywords = ', '.join(concepts).replace("'", "''")  # Escape single quotes
 
-            # Write article ID and subdomain once
-            f.write(f"INSERT INTO Sentences (ArticleID, Subdomain) VALUES ('{article_id}', '{subdomain_translation}');\n")
+            # Write article ID, subdomain, and keywords to SQL file
+            f.write(f"INSERT INTO Sentences (ArticleID, Subdomain, Keywords) VALUES ('{article_id}', '{subdomain_translation}', '{keywords}');\n")
 
-            """article_sentences = []
+
+print("Data extraction and SQL creation complete.")
+            
+"""article_sentences = []
 
             for sentence in root.findall('.//sentence'):
                 text_element = sentence.find('.//text')
@@ -81,7 +89,6 @@ with open(output_sql_file, 'w') as f:
                 f.write(f"INSERT INTO Sentences (ArticleID, Subdomain, SentenceText) VALUES ("
                         f"'{article_id}', '{subdomain_translation}', '{sentence_text}');\n")"""
 
-print("Data extraction and SQL creation complete.")
                     
 
 
