@@ -45,7 +45,6 @@ subdomain_translations = {
     "Notfall+Rettungsmedizin": "Emergency and Rescue Medicine",
     "DerPathologe": "The Pathologist",
 }
-
 with open(output_sql_file, 'w') as f:
     f.write('''CREATE TABLE IF NOT EXISTS Sentences (
                     ArticleID TEXT,
@@ -55,9 +54,6 @@ with open(output_sql_file, 'w') as f:
 
     # XML filenames with dir
     xml_filenames = [os.path.join(xml_files, filename) for filename in os.listdir(xml_files)]
-    #print(xml_filenames)
-
-    processed_sentences = set()
 
     for xml_file in xml_filenames:
         if os.path.isfile(xml_file) and os.path.getsize(xml_file) > 0:  # Ensure it's a file and it's not empty
@@ -69,14 +65,25 @@ with open(output_sql_file, 'w') as f:
             # Translate subdomain if possible
             subdomain_translation = subdomain_translations.get(subdomain)
 
-            for sentence in root.findall('sentence'):
-                text_element = sentence.find('text')
+            # Write article ID and subdomain once
+            f.write(f"INSERT INTO Sentences (ArticleID, Subdomain) VALUES ('{article_id}', '{subdomain_translation}');\n")
+
+            """article_sentences = []
+
+            for sentence in root.findall('.//sentence'):
+                text_element = sentence.find('.//text')
                 if text_element is not None:
-                    sentence_text = ' '.join(token.text for token in text_element.findall('token') if token.text)
+                    sentence_text = ' '.join(token.text for token in text_element.findall('.//token') if token.text)
                     sentence_text = sentence_text.replace("'", "''")  # Escape single quotes in the sentence text
-                    f.write(f"INSERT INTO Sentences (ArticleID, Subdomain, SentenceText) VALUES ("
-                            f"'{article_id}', '{subdomain_translation}', '{sentence_text}');\n")
-            
+                    article_sentences.append(sentence_text)
+
+            for sentence_text in article_sentences:
+                f.write(f"INSERT INTO Sentences (ArticleID, Subdomain, SentenceText) VALUES ("
+                        f"'{article_id}', '{subdomain_translation}', '{sentence_text}');\n")"""
+
+print("Data extraction and SQL creation complete.")
+                    
+
 
 
 
