@@ -14,7 +14,7 @@ ner_pipeline = pipeline("ner", model=model, tokenizer=tokenizer)
 # Directory containing XML files
 xml_files_dir = "/Users/diana/Desktop/TT"
 
-# Create table if it doesn't exist
+# Database queries
 create_table_query = '''
 CREATE TABLE IF NOT EXISTS Sentences (
     SentenceID SERIAL PRIMARY KEY,
@@ -24,13 +24,6 @@ CREATE TABLE IF NOT EXISTS Sentences (
 );
 '''
 
-# Insert sentence data into PostgreSQL
-insert_sentence_query = '''
-INSERT INTO Sentences (ArticleID, Subdomain, SentenceText) 
-VALUES (%s, %s, %s) RETURNING SentenceID;
-'''
-
-# Insert named entity data into PostgreSQL
 create_entities_table_query = '''
 CREATE TABLE IF NOT EXISTS Entities (
     EntityID SERIAL PRIMARY KEY,
@@ -40,11 +33,15 @@ CREATE TABLE IF NOT EXISTS Entities (
 );
 '''
 
+insert_sentence_query = '''
+INSERT INTO Sentences (ArticleID, Subdomain, SentenceText) 
+VALUES (%s, %s, %s) RETURNING SentenceID;
+'''
+
 insert_entity_query = '''
 INSERT INTO Entities (SentenceID, EntityText, EntityType) 
 VALUES (%s, %s, %s);
 '''
-
 
 # Processing and inserting XML data
 def process_xml_files(xml_files_dir, cursor):
@@ -62,10 +59,8 @@ def process_xml_files(xml_files_dir, cursor):
                 for sentence in root.findall('.//sentence'):
                     umlsterm = sentence.find('.//umlsterm/concept')
                     if umlsterm is not None:  # sometimes subdomains are missing
-                        subdomain = umlsterm.attrib.get('preferred', '').replace("'", "''")
-                        sentence_text = ''.join(sentence.itertext()).strip().replace("'",
-                                                                                     "''") if sentence.text is None else sentence.text.strip().replace(
-                            "'", "''")
+                        subdomain = umlsterm.attrib.get('preferred', '')
+                        sentence_text = ''.join(sentence.itertext()).strip() if sentence.text is None else sentence.text.strip()
 
                         # Insert sentence data into PostgreSQL
                         cursor.execute(insert_sentence_query, (article_id, subdomain, sentence_text))
@@ -75,7 +70,7 @@ def process_xml_files(xml_files_dir, cursor):
                         ner_results = ner_pipeline(sentence_text)
                         for ent in ner_results:
                             cursor.execute(insert_entity_query, (sentence_id, ent['word'], ent['entity']))
-
+                
                 conn.commit()
             except ET.ParseError as e:  # XML syntax problems
                 print(f"ParseError in file {xml_file}: {e}")
@@ -88,13 +83,17 @@ def process_xml_files(xml_files_dir, cursor):
         else:
             print(f"Skipping file: {xml_file}, it's either not a file or empty.")
 
-
 # Main execution
-if __name__ == "__main__":
+def main():
     try:
         # Connect to PostgreSQL
-        conn = psycopg2.connect(dbname='your_database', user='your_user', password='your_password', host='your_host',
-                                port=5432)
+        conn = psycopg2.connect(
+            dbname=os.getenv('DB_NAME'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD'),
+            host=os.getenv('DB_HOST'),
+            port=os.getenv('DB_PORT')
+        )
         cursor = conn.cursor()
 
         # Create tables
@@ -117,3 +116,6 @@ if __name__ == "__main__":
             conn.close()
 
     print("Data extraction and insertion into PostgreSQL complete.")
+
+if __name__ == "__main__":
+    main()
