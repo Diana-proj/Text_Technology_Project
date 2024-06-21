@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="document">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="sentence" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="umlsterms" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="umlsterm" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="concept" minOccurs="1" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="msh" minOccurs="0" maxOccurs="unbounded">
+                                                                    <xs:complexType>
+                                                                        <xs:simpleContent>
+                                                                            <xs:extension base="xs:string">
+                                                                                <xs:attribute name="code" type="xs:string" use="required"/>
+                                                                            </xs:extension>
+                                                                        </xs:simpleContent>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                            <xs:attribute name="id" type="xs:string" use="required"/>
+                                                            <xs:attribute name="cui" type="xs:string" use="required"/>
+                                                            <xs:attribute name="preferred" type="xs:string" use="required"/>
+                                                            <xs:attribute name="tui" type="xs:string" use="required"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                                <xs:attribute name="id" type="xs:string" use="required"/>
+                                                <xs:attribute name="from" type="xs:string" use="required"/>
+                                                <xs:attribute name="to" type="xs:string" use="required"/>
+                                                <xs:attribute name="lemmaref" type="xs:string" use="optional"/>
+                                                <xs:attribute name="type" type="xs:string" use="optional"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="xrceterms" minOccurs="0" maxOccurs="1">
+                                <xs:complexType mixed="true">
+                                    <xs:sequence/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="ewnterms" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="ewnterm" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="sense" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:simpleContent>
+                                                                <xs:extension base="xs:string">
+                                                                    <xs:attribute name="offset" type="xs:string" use="required"/>
+                                                                </xs:extension>
+                                                            </xs:simpleContent>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                                <xs:attribute name="id" type="xs:string" use="required"/>
+                                                <xs:attribute name="from" type="xs:string" use="required"/>
+                                                <xs:attribute name="to" type="xs:string" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="semrels" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="semrel" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attribute name="id" type="xs:string" use="required"/>
+                                                <xs:attribute name="term1" type="xs:string" use="required"/>
+                                                <xs:attribute name="term2" type="xs:string" use="required"/>
+                                                <xs:attribute name="reltype" type="xs:string" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="gramrels" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="chunks" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="chunk" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attribute name="id" type="xs:string" use="required"/>
+                                                <xs:attribute name="from" type="xs:string" use="required"/>
+                                                <xs:attribute name="to" type="xs:string" use="required"/>
+                                                <xs:attribute name="type" type="xs:string" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="text" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="token" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:simpleContent>
+                                                    <xs:extension base="xs:string">
+                                                        <xs:attribute name="id" type="xs:string" use="required"/>
+                                                        <xs:attribute name="pos" type="xs:string" use="required"/>
+                                                        <xs:attribute name="lemma" type="xs:string" use="optional"/>
+                                                        <xs:attribute name="lemma1" type="xs:string" use="optional"/>
+                                                        <xs:attribute name="lemma2" type="xs:string" use="optional"/>
+                                                        <xs:attribute name="lemma3" type="xs:string" use="optional"/>
+                                                        <xs:attribute name="lemma4" type="xs:string" use="optional"/>
+                                                    </xs:extension>
+                                                </xs:simpleContent>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="id" type="xs:string" use="required"/>
+                        <xs:attribute name="corresp" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+            <xs:attribute name="type" type="xs:string" use="required"/>
+            <xs:attribute name="lang" type="xs:string" use="required"/>
+            <xs:attribute name="corresp" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
